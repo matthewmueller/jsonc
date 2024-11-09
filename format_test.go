@@ -166,57 +166,57 @@ var testdataFormat = []struct {
  */`,
 }, {
 	in: `
-		
-		   // LineComment   
-		/* 
-  BlockComment     
+
+		   // LineComment
+		/*
+  BlockComment
 			 */
 
 	{
-		
-		// LineComment   
-	 /* 
-BlockComment     
+
+		// LineComment
+	 /*
+BlockComment
 		  */
 
 "name"
 
-		
-// LineComment   
-/* 
-BlockComment     
+
+// LineComment
+/*
+BlockComment
 	 */
 
 :
-		
-    // LineComment   
-/* 
- BlockComment     
+
+    // LineComment
+/*
+ BlockComment
 	 */
 
 			   "value"
 
-		
-         			   // LineComment   
-		   	   /* 
-			                         BlockComment     
+
+         			   // LineComment
+		   	   /*
+			                         BlockComment
 					*/
 
 			   ,
 
-		
-	    		   // LineComment      
-   			   /* 
-			   BlockComment     
+
+	    		   // LineComment
+   			   /*
+			   BlockComment
 					*/
-			   
+
 
 	}
 
-			
-// LineComment   
-/* 
-BlockComment     
+
+// LineComment
+/*
+BlockComment
 	 */
 
 
@@ -275,7 +275,7 @@ BlockComment
 { //line2
 	"name" //line3
 		: //line4
-		"value", //line5
+		"value" //line5
 } //line6`,
 }, {
 	in:   `/**//**/{/**//**/"name"/**//**/:/**//**/null/**//**/,}/**//**/`,
@@ -317,7 +317,7 @@ BlockComment
 	"name______": "value",
 	// comment
 	"name_":   "value",
-	"name___": "value",
+	"name___": "value"
 }`,
 }, {
 	in: `{
@@ -348,10 +348,10 @@ BlockComment
 	/**/ "name":         "value",
 	/**/ "name______":   "value", /**/
 	"name_" /**/ :  "value" /**/ ,
-	"name___": /**/ "value",
+	"name___": /**/ "value"
 }`,
 }, {
-	in: `{"foo": "bar", 
+	in: `{"foo": "bar",
 	// Comment1
 	"fizz":"buzz"
 	// Comment2
@@ -373,7 +373,7 @@ BlockComment
 {
 
 
-	
+
 					// foo
 					// foo
 
@@ -397,7 +397,7 @@ BlockComment
 
 
 
-	
+
 								[									"v",									]
 
 								// gaz
@@ -426,7 +426,7 @@ BlockComment
 		:
 		// baz
 		// baz
-		["v"],
+		["v"]
 
 	// gaz
 	// gaz
@@ -437,20 +437,20 @@ BlockComment
 }`,
 }, {
 	in: `			   {
-		"a" :     {	
+		"a" :     {
 			"b" : [
-  
+
 			  ],
 		},
-  
-  
-  
+
+
+
   }   `,
 	want: `
 {
 	"a": {
-		"b": [],
-	},
+		"b": []
+	}
 }`,
 }, {
 	in: `{"a":{"b":[],"c":[
@@ -477,34 +477,34 @@ BlockComment
 		]
 
 	]
-	
+
 	`,
 	want: `
 [
 	[
-		"a",
+		"a"
 	],
 	[
-		"a",
+		"a"
 	],
 	[
-		"a",
-	],
+		"a"
+	]
 ]`,
 }, {
 	in: `
 	{//fizzbuzz
 	"key"
-		
+
 		:"value"
-		
-		,//wizzwuzzz 
-		
+
+		,//wizzwuzzz
+
 	// standalone comment
-	
+
 		// key comment
 		"key":"value"}
-	
+
 	`,
 	want: `
 { //fizzbuzz
@@ -513,7 +513,7 @@ BlockComment
 	// standalone comment
 
 	// key comment
-	"key": "value",
+	"key": "value"
 }`,
 }}
 

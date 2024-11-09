@@ -335,13 +335,10 @@ func (v *Value) formatWhitespace(depth int, needExpand map[composite]bool, stand
 
 		// Normalize presence of trailing comma.
 		surroundedComma := comp.lastValue() != nil && len(comp.lastValue().AfterExtra) > 0 && len(*comp.afterExtra()) > 0
-		switch {
+
 		// Avoid a trailing comma for a non-expanded object or array.
-		case !expand && !surroundedComma:
+		if !expand && !surroundedComma {
 			setTrailingComma(comp, false)
-		// Otherwise, emit a trailing comma (unless this need to be standard).
-		case expand && !standardize:
-			setTrailingComma(comp, true)
 		}
 	}
 }
