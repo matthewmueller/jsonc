@@ -40,7 +40,7 @@ var testdataFormat = []struct {
 	in:   `null`,
 	want: `null`,
 }, {
-	in:   " \r\n\t//comment\n\n\n/**/null \r\t//comment\n\n\n/**/\r\n\t",
+	in:   " \r\n  //comment\n\n\n/**/null \r  //comment\n\n\n/**/\r\n  ",
 	want: "//comment\n\n/**/ null //comment\n\n/**/",
 }, {
 	in:   "//comment\r\n//comment\n\r/**\r/*/null",
@@ -49,22 +49,22 @@ var testdataFormat = []struct {
 	in:   `"\u000F\u000a\/\ud83d\ude02"`,
 	want: `"\u000f\n/😂"`,
 }, {
-	in:   "{\n\r\t \n\r\t }",
+	in:   "{\n\r   \n\r   }",
 	want: "{}",
 }, {
 	in:   "{/**/}",
 	want: "{ /**/ }",
 }, {
-	in:   "{//\r\t\n}",
+	in:   "{//\r  \n}",
 	want: "{ //\n}",
 }, {
-	in:   "[\n\r\t \n\r\t ]",
+	in:   "[\n\r   \n\r   ]",
 	want: "[]",
 }, {
 	in:   "[/**/]",
 	want: "[ /**/ ]",
 }, {
-	in:   "[//\r\t\n]",
+	in:   "[//\r  \n]",
 	want: "[ //\n]",
 }, {
 	in:   `{"name" 	 	:"value" 	 	,"name":"value"}`,
@@ -80,16 +80,16 @@ var testdataFormat = []struct {
 	want: `[null /**/ , null]`,
 }, {
 	in:   "[0//\n,]",
-	want: "\n[\n\t0 //\n\t\t,\n]",
+	want: "\n[\n  0 //\n    ,\n]",
 }, {
 	in:   "[/*\n*/\n]",
-	want: "[ /*\n\t */\n]",
+	want: "[ /*\n   */\n]",
 }, {
 	in:   "[/*\n\n*/\n]",
-	want: "[ /*\n\n\t*/\n]",
+	want: "[ /*\n\n  */\n]",
 }, {
-	in:   "[ /*\n\t\n\t*/\n]",
-	want: "[ /*\n\n\t*/\n]",
+	in:   "[ /*\n  \n  */\n]",
+	want: "[ /*\n\n  */\n]",
 }, {
 	in: `[
 			/*
@@ -102,12 +102,12 @@ var testdataFormat = []struct {
 		]`,
 	want: `
 [
-	/*
+  /*
 
-			line1
-	  line2
+  		line1
+    line2
 
-	*/
+  */
 ]`,
 }, {
 	in: `[
@@ -121,12 +121,12 @@ var testdataFormat = []struct {
 	]`,
 	want: `
 [
-	/*
+  /*
 
-		line1
-	line2
+  	line1
+  line2
 
-	*/
+  */
 ]`,
 }, {
 	in: `[
@@ -137,10 +137,10 @@ var testdataFormat = []struct {
 		]`,
 	want: `
 [
-	/*
-	 * line1
-	 * line2
-	 */
+  /*
+   * line1
+   * line2
+   */
 ]`,
 }, {
 	in: `[
@@ -151,10 +151,10 @@ var testdataFormat = []struct {
 	]`,
 	want: `
 [
-	/*
-		* line1
-	* line2
-	*/
+  /*
+  	* line1
+  * line2
+  */
 ]`,
 }, {
 	in: "//😊 \r\t☹\n/*😊 \r\t☹\n*/null//😊 \r\t\n/*\r\t\n*/",
@@ -229,32 +229,32 @@ BlockComment
 */
 
 {
-	// LineComment
-	/*
-	BlockComment
-	*/
+  // LineComment
+  /*
+  BlockComment
+  */
 
-	"name"
-		// LineComment
-		/*
-		BlockComment
-		*/
-		:
-		// LineComment
-		/*
-		BlockComment
-		*/
-		"value"
-		// LineComment
-		/*
-		BlockComment
-		*/
-		,
+  "name"
+    // LineComment
+    /*
+    BlockComment
+    */
+    :
+    // LineComment
+    /*
+    BlockComment
+    */
+    "value"
+    // LineComment
+    /*
+    BlockComment
+    */
+    ,
 
-	// LineComment
-	/*
-	BlockComment
-	*/
+  // LineComment
+  /*
+  BlockComment
+  */
 }
 
 // LineComment
@@ -273,9 +273,9 @@ BlockComment
 	want: `
 //line1
 { //line2
-	"name" //line3
-		: //line4
-		"value" //line5
+  "name" //line3
+    : //line4
+    "value" //line5
 } //line6`,
 }, {
 	in:   `/**//**/{/**//**/"name"/**//**/:/**//**/null/**//**/,}/**//**/`,
@@ -298,10 +298,10 @@ BlockComment
 			}`,
 	want: `
 {
-	"name":       "value",
-	"name______": "value",
-	"name_":      "value",
-	"name___":    "value"
+  "name":       "value",
+  "name______": "value",
+  "name_":      "value",
+  "name___":    "value"
 }`,
 }, {
 	in: `{
@@ -313,11 +313,11 @@ BlockComment
 		}`,
 	want: `
 {
-	"name":       "value",
-	"name______": "value",
-	// comment
-	"name_":   "value",
-	"name___": "value"
+  "name":       "value",
+  "name______": "value",
+  // comment
+  "name_":   "value",
+  "name___": "value"
 }`,
 }, {
 	in: `{
@@ -330,11 +330,11 @@ BlockComment
 	}`,
 	want: `
 {
-	"name":       "value",
-	"name______": "value",
+  "name":       "value",
+  "name______": "value",
 
-	"name_":   "value",
-	"name___": "value"
+  "name_":   "value",
+  "name___": "value"
 }`,
 }, {
 	in: `{
@@ -345,10 +345,10 @@ BlockComment
 		}`,
 	want: `
 {
-	/**/ "name":         "value",
-	/**/ "name______":   "value", /**/
-	"name_" /**/ :  "value" /**/ ,
-	"name___": /**/ "value"
+  /**/ "name":         "value",
+  /**/ "name______":   "value", /**/
+  "name_" /**/ :  "value" /**/ ,
+  "name___": /**/ "value"
 }`,
 }, {
 	in: `{"foo": "bar",
@@ -358,11 +358,11 @@ BlockComment
 ,}`,
 	want: `
 {
-	"foo": "bar",
-	// Comment1
-	"fizz": "buzz"
-		// Comment2
-		,
+  "foo": "bar",
+  // Comment1
+  "fizz": "buzz"
+    // Comment2
+    ,
 }`,
 }, {
 	in: `
@@ -417,23 +417,23 @@ BlockComment
 
 // ACLs
 {
-	// foo
-	// foo
+  // foo
+  // foo
 
-	"k"
-		// bar
-		// bar
-		:
-		// baz
-		// baz
-		["v"]
+  "k"
+    // bar
+    // bar
+    :
+    // baz
+    // baz
+    ["v"]
 
-	// gaz
-	// gaz
+  // gaz
+  // gaz
 
-	// ,
+  // ,
 
-	// maz
+  // maz
 }`,
 }, {
 	in: `			   {
@@ -448,9 +448,9 @@ BlockComment
   }   `,
 	want: `
 {
-	"a": {
-		"b": []
-	}
+  "a": {
+    "b": []
+  }
 }`,
 }, {
 	in: `{"a":{"b":[],"c":[
@@ -481,15 +481,15 @@ BlockComment
 	`,
 	want: `
 [
-	[
-		"a"
-	],
-	[
-		"a"
-	],
-	[
-		"a"
-	]
+  [
+    "a"
+  ],
+  [
+    "a"
+  ],
+  [
+    "a"
+  ]
 ]`,
 }, {
 	in: `
@@ -508,12 +508,12 @@ BlockComment
 	`,
 	want: `
 { //fizzbuzz
-	"key": "value", //wizzwuzzz
+  "key": "value", //wizzwuzzz
 
-	// standalone comment
+  // standalone comment
 
-	// key comment
-	"key": "value"
+  // key comment
+  "key": "value"
 }`,
 }}
 

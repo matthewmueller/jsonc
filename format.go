@@ -593,7 +593,7 @@ func (b Extra) hasNewline() bool {
 
 func appendIndent(b []byte, n int) []byte {
 	for i := 0; i < n; i++ {
-		b = append(b, '\t')
+		b = append(b, ' ', ' ')
 	}
 	return b
 }
