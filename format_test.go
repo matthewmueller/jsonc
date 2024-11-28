@@ -298,10 +298,10 @@ BlockComment
 			}`,
 	want: `
 {
-  "name":       "value",
+  "name": "value",
   "name______": "value",
-  "name_":      "value",
-  "name___":    "value"
+  "name_": "value",
+  "name___": "value"
 }`,
 }, {
 	in: `{
@@ -313,10 +313,10 @@ BlockComment
 		}`,
 	want: `
 {
-  "name":       "value",
+  "name": "value",
   "name______": "value",
   // comment
-  "name_":   "value",
+  "name_": "value",
   "name___": "value"
 }`,
 }, {
@@ -330,10 +330,10 @@ BlockComment
 	}`,
 	want: `
 {
-  "name":       "value",
+  "name": "value",
   "name______": "value",
 
-  "name_":   "value",
+  "name_": "value",
   "name___": "value"
 }`,
 }, {
@@ -345,9 +345,9 @@ BlockComment
 		}`,
 	want: `
 {
-  /**/ "name":         "value",
-  /**/ "name______":   "value", /**/
-  "name_" /**/ :  "value" /**/ ,
+  /**/ "name": "value",
+  /**/ "name______": "value", /**/
+  "name_" /**/ : "value" /**/ ,
   "name___": /**/ "value"
 }`,
 }, {

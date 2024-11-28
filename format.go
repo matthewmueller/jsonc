@@ -80,7 +80,6 @@ func (v *Value) Format() {
 	v.normalize()
 	v.expandComposites(needExpand)
 	v.formatWhitespace(0, needExpand, isStandard)
-	v.alignObjectValues()
 	// Format trailing extra.
 	v.AfterExtra.format(0, formatOptions{})
 	v.AfterExtra = append(bytes.TrimRightFunc(v.AfterExtra, unicode.IsSpace), '\n') // always has exactly one trailing newline
@@ -497,94 +496,6 @@ func (b *Extra) format(depth int, opts formatOptions) {
 	if !bytes.Equal(*b, out) {
 		*b = append((*b)[:0], out...)
 	}
-}
-
-// alignObjectValues aligns object values by inserting spaces after the name
-// so that the values are aligned to the same column.
-//
-// It always returns true to be compatible with composite.rangeValues.
-func (v *Value) alignObjectValues() bool {
-	// TODO(dsnet): This is broken for non-monospace, non-narrow characters.
-	// This is hard to fix as even `go fmt` suffers from this problem.
-	// See https://golang.org/issue/8273.
-	if obj, ok := v.Value.(*Object); ok {
-		type row struct {
-			extra  *Extra // pointer to extra after colon and before value
-			length int    // length from start of name to end of extra
-		}
-		var rows []row
-		alignRows := func() {
-			// TODO(dsnet): Should we break apart rows if the number of spaces
-			// to insert exceeds some threshold?
-
-			// Compute the maximum width.
-			var max int
-			for _, row := range rows {
-				if max < row.length {
-					max = row.length
-				}
-			}
-			// Align every row up to that width.
-			for _, row := range rows {
-				for n := max - row.length; n > 0; n-- {
-					*row.extra = append(*row.extra, ' ')
-				}
-			}
-			// Reset the sequence of rows.
-			rows = rows[:0]
-		}
-		var indentSuffix []byte
-		for i := range obj.Members {
-			name := &obj.Members[i].Name
-			value := &obj.Members[i].Value
-
-			// Whitespace right before name must have a newline and
-			// everything after the name until the comma cannot have newlines.
-			if !name.BeforeExtra.hasNewline() ||
-				name.hasNewline(false) ||
-				name.AfterExtra.hasNewline() ||
-				value.BeforeExtra.hasNewline() ||
-				value.hasNewline(false) ||
-				value.AfterExtra.hasNewline() {
-				alignRows()
-				continue
-			}
-
-			// If there are multiple newlines or the indentSuffix mismatches,
-			// then this is the start of a new block or rows to align.
-			if bytes.Count(name.BeforeExtra, newline) > 1 || !bytes.HasSuffix(name.BeforeExtra, indentSuffix) {
-				alignRows() // flush the current block or rows
-			}
-
-			rows = append(rows, row{
-				extra:  &value.BeforeExtra,
-				length: len(name.Value.(Literal)) + len(name.AfterExtra) + len(":") + len(value.BeforeExtra),
-			})
-		}
-		alignRows()
-	}
-
-	// Recursively align all sub-objects.
-	if comp, ok := v.Value.(composite); ok {
-		for v2 := range comp.allValues() {
-			v2.alignObjectValues()
-		}
-	}
-	return true
-}
-
-func (v Value) hasNewline(checkTopLevelExtra bool) bool {
-	if checkTopLevelExtra && (v.BeforeExtra.hasNewline() || v.AfterExtra.hasNewline()) {
-		return true
-	}
-	if comp, ok := v.Value.(composite); ok {
-		for v := range comp.allValues() {
-			if v.hasNewline(true) {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func (b Extra) hasNewline() bool {
