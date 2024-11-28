@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package hujson contains a parser and packer for the JWCC format:
+// package jsonc contains a parser and packer for the JWCC format:
 // JSON With Commas and Comments (or "human JSON").
 //
 // JWCC is an extension of standard JSON (as defined in RFC 8259) in order to
@@ -86,7 +86,7 @@
 //	if err := json.Unmarshal(b, &v); err != nil {
 //		... // handle err
 //	}
-package hujson
+package jsonc
 
 import (
 	"bytes"

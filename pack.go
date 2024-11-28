@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hujson
+package jsonc
 
 // UpdateOffsets iterates through v and updates all
 // Value.StartOffset and Value.EndOffset fields so that they are accurate.

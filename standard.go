@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hujson
+package jsonc
 
 // IsStandard reports whether this is standard JSON
 // by checking that there are no comments and no trailing commas.

@@ -1,4 +1,4 @@
-package hujson
+package jsonc
 
 import (
 	"testing"
