@@ -256,15 +256,15 @@ var testdataPatch = []struct {
 	in: `{
 	"name1": "value",
 	// Comment1
-	
+
 	// Comment2
 
 	// Comment3
 	"name2": "value", // Comment4
 	// Comment5
-	
+
 	// Comment6
-	
+
 	// Comment7
 	"name3": "value",
 }`,
@@ -272,11 +272,11 @@ var testdataPatch = []struct {
 	want: `{
 	"name1": "value",
 	// Comment1
-	
+
 	// Comment2
 
 	// Comment6
-	
+
 	// Comment7
 	"name3": "value",
 }`,
@@ -284,15 +284,15 @@ var testdataPatch = []struct {
 	in: `[
 	"value1",
 	// Comment1
-	
+
 	// Comment2
 
 	// Comment3
 	"value2", // Comment4
 	// Comment5
-	
+
 	// Comment6
-	
+
 	// Comment7
 	"value3",
 ]`,
@@ -300,11 +300,11 @@ var testdataPatch = []struct {
 	want: `[
 	"value1",
 	// Comment1
-	
+
 	// Comment2
 
 	// Comment6
-	
+
 	// Comment7
 	"value3",
 ]`,
