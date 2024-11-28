@@ -16,3 +16,7 @@ The specific changes were:
 ## Usage in VSCode
 
 VSCode natively recognizes the `.jsonc`.
+
+## Thanks
+
+Many thanks to the [Tailscale](https://github.com/tailscale) team for creating this wonderful package.
