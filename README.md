@@ -15,7 +15,7 @@ The specific changes were:
 
 ## Usage in VSCode
 
-VSCode natively recognizes the `.jsonc`.
+VSCode natively recognizes the `.jsonc` file format.
 
 ## Thanks
 
