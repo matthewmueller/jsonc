@@ -1,34 +1,18 @@
-# HuJSON - "Human JSON" ([JWCC](https://nigeltao.github.io/blog/2021/json-with-commas-comments.html))
+# jsonc
 
-The `github.com/tailscale/hujson` package implements
-the [JWCC](https://nigeltao.github.io/blog/2021/json-with-commas-comments.html) extension
-of [standard JSON](https://datatracker.ietf.org/doc/html/rfc8259).
+This package is a fork of [hujson](github.com/tailscale/hujson) that works better with VSCode's built-in [JSON with Comments (jsonc)](https://code.visualstudio.com/docs/languages/json#_json-with-comments) format. This is the same format you'll find on VSCode's Settings and Task files.
 
-The `JWCC` format permits two things over standard JSON:
+This fork adjusts the formatting to match both:
 
-1. C-style line comments and block comments intermixed with whitespace,
-2. allows trailing commas after the last member/element in an object/array.
+- VSCode's [built-in JSON formatter](https://code.visualstudio.com/docs/languages/json#_formatting)
+- The [Prettier](https://prettier.io/) formatter
 
-All JSON is valid JWCC.
+The specific changes were:
 
-For details, see the JWCC docs at:
+- Adding a `,` on the last field of an object or array
+- Switches to using two spaces for indentation instead of tabs
+- Removes object value alignment
 
-https://nigeltao.github.io/blog/2021/json-with-commas-comments.html
+## Usage in VSCode
 
-## Visual Studio Code association
-
-Visual Studio Code supports a similar `jsonc` (JSON with comments) format. To
-treat all `*.hujson` files as `jsonc` with trailing commas allowed, you can add
-the following snippet to your Visual Studio Code configuration:
-
-```json
-"files.associations": {
-    "*.hujson": "jsonc"
-},
-"json.schemas": [{
-    "fileMatch": ["*.hujson"],
-    "schema": {
-        "allowTrailingCommas": true
-    }
-}]
-```
+VSCode natively recognizes the `.jsonc`.

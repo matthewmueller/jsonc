@@ -1,4 +1,4 @@
-module github.com/tailscale/hujson
+module github.com/matthewmueller/jsonc
 
 go 1.23
 
