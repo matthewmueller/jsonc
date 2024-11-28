@@ -9,9 +9,9 @@ This fork adjusts the formatting to match both:
 
 The specific changes were:
 
-- Adding a `,` on the last field of an object or array
+- Does not add a trailing comma `,` on the last field of an object or array
 - Switches to using two spaces for indentation instead of tabs
-- Removes object value alignment
+- Removes Go-style field alignment
 
 ## Usage in VSCode
 
