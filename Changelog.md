@@ -1,3 +1,7 @@
+# 0.3.1 / 2026-02-01
+
+- add an alias
+
 # 0.3.0 / 2026-02-01
 
 - add `UnmarshalExpanded` and `PatchExpanded`. These allow you to preserve dynamic
