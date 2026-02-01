@@ -1,3 +1,8 @@
+# 0.3.0 / 2026-02-01
+
+- add `UnmarshalExpanded` and `PatchExpanded`. These allow you to preserve dynamic
+  variables, while making other changes to the schema (see test for an example).
+
 # 0.2.0 / 2026-02-01
 
 - add higher-level patching functions
