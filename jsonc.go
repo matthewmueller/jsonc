@@ -9,6 +9,9 @@ import (
 	"github.com/snorwin/jsonpatch"
 )
 
+// Patches represents a list of JSON patches.
+type Patches = jsonpatch.JSONPatchList
+
 func Unmarshal(data []byte, out any) error {
 	// Don't modify the original data
 	copied := make([]byte, len(data))
@@ -36,7 +39,7 @@ func Unmarshal(data []byte, out any) error {
 // UnmarshalExpanded unmarshals JSONC data into the given structure, expanding any
 // environment variables using the provided expander function. It also returns the
 // JSON patches that were applied during the expansion.
-func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts jsonpatch.JSONPatchList, err error) {
+func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts Patches, err error) {
 	if err := Unmarshal(data, &out); err != nil {
 		return out, reverts, err
 	}
@@ -97,7 +100,7 @@ func Patch[JSON any](prev []byte, next JSON) ([]byte, error) {
 // formatting.
 // TODO: right now the reverts always win even if the next value was modified
 // after the original expansion. See if we can improve this behavior.
-func PatchExpanded[JSON any](prev []byte, next JSON, reverts jsonpatch.JSONPatchList) ([]byte, error) {
+func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, error) {
 	// Apply the original patches to bring the schema back to the unexpanded state
 	if reverts.Len() > 0 {
 		nextData, err := json.Marshal(next)
