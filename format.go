@@ -374,7 +374,7 @@ func (b *Extra) format(depth int, opts formatOptions) {
 			nl := min(bytes.Count(in[:n], newline),
 				// never allow more than one blank line
 				2)
-			for i := 0; i < nl; i++ {
+			for range nl {
 				out = append(out, '\n')
 			}
 			in = in[n:]
