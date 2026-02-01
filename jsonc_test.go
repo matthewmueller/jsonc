@@ -71,3 +71,51 @@ func TestWrite(t *testing.T) {
 
 	diff.TestString(t, string(actual), string(expect))
 }
+
+const expandedInput = `// This is a schema file. It defines the server configuration for your project.
+{
+  // Application name
+  "name": "${APP_NAME}",
+  // Urls for the app (leave empty for local development)
+  "urls": [
+    "hello.example.com",
+		"${BASE_URL}"
+  ]
+  // More fields
+}`
+
+const expandedExpect = `// This is a schema file. It defines the server configuration for your project.
+{
+  // Application name
+  "name": "${APP_NAME}",
+  // Urls for the app (leave empty for local development)
+  "urls": [
+    "hello.example.com",
+    "${BASE_URL}",
+    "new.example.com"
+  ]
+  // More fields
+}`
+
+func TestExpanded(t *testing.T) {
+	is := is.New(t)
+
+	schema, patches, err := jsonc.UnmarshalExpanded[*Schema]([]byte(expandedInput), func(key string) string {
+		switch key {
+		case "APP_NAME":
+			return "MyApp"
+		case "BASE_URL":
+			return "base.example.com"
+		default:
+			return ""
+		}
+	})
+	is.NoErr(err)
+
+	schema.Urls = append(schema.Urls, "new.example.com")
+
+	actual, err := jsonc.PatchExpanded([]byte(expandedInput), schema, patches)
+	is.NoErr(err)
+
+	diff.TestString(t, strings.TrimSuffix(string(actual), "\n"), expandedExpect)
+}

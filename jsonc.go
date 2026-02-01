@@ -1,7 +1,9 @@
 package jsonc
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/snorwin/jsonpatch"
@@ -18,8 +20,36 @@ func Unmarshal(data []byte, out any) error {
 		return err
 	}
 
-	// Unmarshal the standardized JSON into the output structure
-	return json.Unmarshal(data, out)
+	// Create a decoder and disallow unknown fields
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	// Disallow unknown fields
+	decoder.DisallowUnknownFields()
+
+	// Unmarshal the JSON into the schema
+	if err := decoder.Decode(&out); err != nil {
+		return fmt.Errorf("jsonc: failed to unmarshal data: %w", err)
+	}
+
+	return nil
+}
+
+// UnmarshalExpanded unmarshals JSONC data into the given structure, expanding any
+// environment variables using the provided expander function. It also returns the
+// JSON patches that were applied during the expansion.
+func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts jsonpatch.JSONPatchList, err error) {
+	if err := Unmarshal(data, &out); err != nil {
+		return out, reverts, err
+	}
+	expandedData := os.Expand(string(data), expander)
+	var expanded JSON
+	if err := Unmarshal([]byte(expandedData), &expanded); err != nil {
+		return out, reverts, err
+	}
+	reverts, err = jsonpatch.CreateJSONPatch(out, expanded)
+	if err != nil {
+		return out, reverts, err
+	}
+	return expanded, reverts, nil
 }
 
 // Patch modifies the original jsonc data with the changes, preserving comments
@@ -60,6 +90,38 @@ func Patch[JSON any](prev []byte, next JSON) ([]byte, error) {
 
 	// Return the modified JSONC as bytes
 	return []byte(huValue.String()), nil
+}
+
+// PatchExpanded modifies the original expanded jsonc data with the changes,
+// reverting any expansions made previously, and preserving comments and
+// formatting.
+// TODO: right now the reverts always win even if the next value was modified
+// after the original expansion. See if we can improve this behavior.
+func PatchExpanded[JSON any](prev []byte, next JSON, reverts jsonpatch.JSONPatchList) ([]byte, error) {
+	// Apply the original patches to bring the schema back to the unexpanded state
+	if reverts.Len() > 0 {
+		nextData, err := json.Marshal(next)
+		if err != nil {
+			return nil, err
+		}
+		nextValue, err := Parse(nextData)
+		if err != nil {
+			return nil, err
+		}
+		indentedPatch, err := json.MarshalIndent(reverts.List(), "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		// Patch the next JSON with the new JSON
+		if err := nextValue.Patch(indentedPatch); err != nil {
+			return nil, err
+		}
+		// Unmarshal the patched JSON back into the next
+		if err := json.Unmarshal([]byte(nextValue.String()), &next); err != nil {
+			return nil, err
+		}
+	}
+	return Patch(prev, next)
 }
 
 // WriteFile writes the JSONC representation of data to the given path,
