@@ -8,12 +8,21 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
+
+func errorsEqual(err1, err2 error) bool {
+	if err1 == nil && err2 == nil {
+		return true
+	}
+	if err1 == nil || err2 == nil {
+		return false
+	}
+	return err1.Error() == err2.Error()
+}
 
 var testdata = []struct {
 	in      string
@@ -283,7 +292,7 @@ func Test(t *testing.T) {
 		if diff := cmp.Diff(tt.want, gotVal, cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("Parse mismatch (-want +got):\n%s", diff)
 		}
-		if !reflect.DeepEqual(gotErr, tt.wantErr) {
+		if !errorsEqual(gotErr, tt.wantErr) {
 			t.Errorf("Parse error mismatch:\ngot  %v\nwant %v", gotErr, tt.wantErr)
 		}
 

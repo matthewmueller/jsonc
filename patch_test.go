@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -509,7 +508,7 @@ func TestPatch(t *testing.T) {
 				t.Fatalf("Parse error: %v", err)
 			}
 			gotErr := v.Patch([]byte(tt.patch))
-			if !reflect.DeepEqual(gotErr, tt.wantErr) {
+			if !errorsEqual(gotErr, tt.wantErr) {
 				t.Errorf("Patch error mismatch:\ngot  %v\nwant %v", gotErr, tt.wantErr)
 			}
 			got := v.String()

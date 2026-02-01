@@ -163,15 +163,23 @@ func (v *Value) Range(f func(v *Value) bool) bool {
 // starting with v itself.
 func (v *Value) All() iter.Seq[*Value] {
 	return func(yield func(*Value) bool) {
-		if !yield(v) {
-			return
-		}
-		if comp, ok := v.Value.(composite); ok {
-			for v2 := range comp.allValues() {
-				for v3 := range v2.All() {
-					if !yield(v3) {
-						return
-					}
+		stack := []*Value{v}
+		for len(stack) > 0 {
+			n := len(stack) - 1
+			cur := stack[n]
+			stack = stack[:n]
+			if !yield(cur) {
+				return
+			}
+			switch comp := cur.Value.(type) {
+			case *Object:
+				for i := len(comp.Members) - 1; i >= 0; i-- {
+					stack = append(stack, &comp.Members[i].Value)
+					stack = append(stack, &comp.Members[i].Name)
+				}
+			case *Array:
+				for i := len(comp.Elements) - 1; i >= 0; i-- {
+					stack = append(stack, &comp.Elements[i])
 				}
 			}
 		}

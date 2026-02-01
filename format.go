@@ -371,10 +371,9 @@ func (b *Extra) format(depth int, opts formatOptions) {
 	for len(in) > 0 {
 		// Handle whitespace.
 		if n := consumeWhitespace(in); n > 0 {
-			nl := bytes.Count(in[:n], newline)
-			if nl > 2 {
-				nl = 2 // never allow more than one blank line
-			}
+			nl := min(bytes.Count(in[:n], newline),
+				// never allow more than one blank line
+				2)
 			for i := 0; i < nl; i++ {
 				out = append(out, '\n')
 			}
@@ -503,7 +502,7 @@ func (b Extra) hasNewline() bool {
 }
 
 func appendIndent(b []byte, n int) []byte {
-	for i := 0; i < n; i++ {
+	for range n {
 		b = append(b, ' ', ' ')
 	}
 	return b

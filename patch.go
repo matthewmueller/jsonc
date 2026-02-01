@@ -225,7 +225,7 @@ func equalValue(x, y Value) bool {
 	//	* It fails to precisely compare integers beyond ±2⁵³.
 	//	* It cannot handle values greater than ±math.MaxFloat64.
 	//	* Comparison of objects with duplicate names has undefined behavior.
-	unmarshal := func(v Value) (vi interface{}) {
+	unmarshal := func(v Value) (vi any) {
 		v = v.Clone()
 		v.Standardize()
 		if json.Unmarshal(v.Pack(), &vi) != nil {
