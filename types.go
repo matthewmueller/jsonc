@@ -94,6 +94,7 @@ import (
 	"fmt"
 	"iter"
 	"math"
+	"slices"
 	"strconv"
 	"unicode/utf8"
 )
@@ -173,9 +174,9 @@ func (v *Value) All() iter.Seq[*Value] {
 			}
 			switch comp := cur.Value.(type) {
 			case *Object:
-				for i := len(comp.Members) - 1; i >= 0; i-- {
-					stack = append(stack, &comp.Members[i].Value)
-					stack = append(stack, &comp.Members[i].Name)
+				for _, v := range slices.Backward(comp.Members) {
+					stack = append(stack, &v.Value)
+					stack = append(stack, &v.Name)
 				}
 			case *Array:
 				for i := len(comp.Elements) - 1; i >= 0; i-- {

@@ -12,6 +12,7 @@ import (
 // Patches represents a list of JSON patches.
 type Patches = jsonpatch.JSONPatchList
 
+// Unmarshal JSONC data into the given structure.
 func Unmarshal(data []byte, out any) error {
 	// Don't modify the original data
 	copied := make([]byte, len(data))
@@ -36,9 +37,10 @@ func Unmarshal(data []byte, out any) error {
 	return nil
 }
 
-// UnmarshalExpanded unmarshals JSONC data into the given structure, expanding any
-// environment variables using the provided expander function. It also returns the
-// JSON patches that were applied during the expansion.
+// UnmarshalExpanded JSONC data into the given structure, expanding
+// any environment variables using the provided expander function. It also
+// returns conditional JSON patches that can revert expanded values back to their
+// original placeholders when PatchExpanded writes the data back.
 func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts Patches, err error) {
 	if err := Unmarshal(data, &out); err != nil {
 		return out, reverts, err
@@ -48,7 +50,7 @@ func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) 
 	if err := Unmarshal([]byte(expandedData), &expanded); err != nil {
 		return out, reverts, err
 	}
-	reverts, err = jsonpatch.CreateJSONPatch(out, expanded)
+	reverts, err = jsonpatch.CreateJSONPatch(out, expanded, jsonpatch.WithHandler(maybeRevertHandler{}))
 	if err != nil {
 		return out, reverts, err
 	}
@@ -98,8 +100,6 @@ func Patch[JSON any](prev []byte, next JSON) ([]byte, error) {
 // PatchExpanded modifies the original expanded jsonc data with the changes,
 // reverting any expansions made previously, and preserving comments and
 // formatting.
-// TODO: right now the reverts always win even if the next value was modified
-// after the original expansion. See if we can improve this behavior.
 func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, error) {
 	// Apply the original patches to bring the schema back to the unexpanded state
 	if reverts.Len() > 0 {
@@ -111,12 +111,7 @@ func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, e
 		if err != nil {
 			return nil, err
 		}
-		indentedPatch, err := json.MarshalIndent(reverts.List(), "", "  ")
-		if err != nil {
-			return nil, err
-		}
-		// Patch the next JSON with the new JSON
-		if err := nextValue.Patch(indentedPatch); err != nil {
+		if err := patchConditionalReverts(&nextValue, reverts); err != nil {
 			return nil, err
 		}
 		// Unmarshal the patched JSON back into the next
@@ -125,6 +120,55 @@ func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, e
 		}
 	}
 	return Patch(prev, next)
+}
+
+func patchConditionalReverts(nextValue *Value, reverts Patches) error {
+	patches := reverts.List()
+	for i := 0; i < len(patches); i++ {
+		patch := patches[i]
+		if patch.Operation == "test" {
+			// A failed test means the caller changed the expanded value, so
+			// skip the following revert and leave the caller's value intact.
+			ok, err := testPatch(nextValue, patch)
+			if err != nil {
+				return err
+			}
+			i++
+			if ok {
+				if err := applyPatch(nextValue, patches[i]); err != nil {
+					return err
+				}
+			}
+			continue
+		}
+		if err := applyPatch(nextValue, patch); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func testPatch(value *Value, patch jsonpatch.JSONPatch) (bool, error) {
+	patchData, err := marshalPatch(patch)
+	if err != nil {
+		return false, err
+	}
+	if err := value.Patch(patchData); err != nil {
+		return false, nil
+	}
+	return true, nil
+}
+
+func applyPatch(value *Value, patch jsonpatch.JSONPatch) error {
+	patchData, err := marshalPatch(patch)
+	if err != nil {
+		return err
+	}
+	return value.Patch(patchData)
+}
+
+func marshalPatch(patch jsonpatch.JSONPatch) ([]byte, error) {
+	return json.MarshalIndent([]jsonpatch.JSONPatch{patch}, "", "  ")
 }
 
 // WriteFile writes the JSONC representation of data to the given path,
@@ -146,4 +190,30 @@ func WriteFile[JSON any](path string, data JSON) error {
 		return err
 	}
 	return os.WriteFile(path, patched, 0644)
+}
+
+type maybeRevertHandler struct{}
+
+func (maybeRevertHandler) Add(pointer jsonpatch.JSONPointer, value any) []jsonpatch.JSONPatch {
+	return []jsonpatch.JSONPatch{
+		{Operation: "add", Path: pointer.String(), Value: value},
+	}
+}
+
+func (maybeRevertHandler) Remove(pointer jsonpatch.JSONPointer, current any) []jsonpatch.JSONPatch {
+	// Only remove the value if it still matches the original expanded value.
+	// If the caller changed it after expansion, PatchExpanded skips this pair.
+	return []jsonpatch.JSONPatch{
+		{Operation: "test", Path: pointer.String(), Value: current},
+		{Operation: "remove", Path: pointer.String()},
+	}
+}
+
+func (maybeRevertHandler) Replace(pointer jsonpatch.JSONPointer, modified, current any) []jsonpatch.JSONPatch {
+	// Only replace the value if it still matches the original expanded value.
+	// If the caller changed it after expansion, PatchExpanded skips this pair.
+	return []jsonpatch.JSONPatch{
+		{Operation: "test", Path: pointer.String(), Value: current},
+		{Operation: "replace", Path: pointer.String(), Value: modified},
+	}
 }
