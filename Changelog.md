@@ -1,3 +1,7 @@
+# 0.3.3 / 2026-05-30
+
+- return pointers for convenience
+
 # 0.3.2 / 2026-05-30
 
 - reverts no longer overwrite manual changes
