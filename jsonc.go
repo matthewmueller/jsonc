@@ -41,7 +41,7 @@ func Unmarshal(data []byte, out any) error {
 // any environment variables using the provided expander function. It also
 // returns conditional JSON patches that can revert expanded values back to their
 // original placeholders when PatchExpanded writes the data back.
-func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts Patches, err error) {
+func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts *Patches, err error) {
 	if err := Unmarshal(data, &out); err != nil {
 		return out, reverts, err
 	}
@@ -50,11 +50,11 @@ func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) 
 	if err := Unmarshal([]byte(expandedData), &expanded); err != nil {
 		return out, reverts, err
 	}
-	reverts, err = jsonpatch.CreateJSONPatch(out, expanded, jsonpatch.WithHandler(maybeRevertHandler{}))
+	patches, err := jsonpatch.CreateJSONPatch(out, expanded, jsonpatch.WithHandler(maybeRevertHandler{}))
 	if err != nil {
 		return out, reverts, err
 	}
-	return expanded, reverts, nil
+	return expanded, &patches, nil
 }
 
 // Patch modifies the original jsonc data with the changes, preserving comments
@@ -100,7 +100,7 @@ func Patch[JSON any](prev []byte, next JSON) ([]byte, error) {
 // PatchExpanded modifies the original expanded jsonc data with the changes,
 // reverting any expansions made previously, and preserving comments and
 // formatting.
-func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, error) {
+func PatchExpanded[JSON any](prev []byte, next JSON, reverts *Patches) ([]byte, error) {
 	// Apply the original patches to bring the schema back to the unexpanded state
 	if reverts.Len() > 0 {
 		nextData, err := json.Marshal(next)
@@ -122,7 +122,7 @@ func PatchExpanded[JSON any](prev []byte, next JSON, reverts Patches) ([]byte, e
 	return Patch(prev, next)
 }
 
-func patchConditionalReverts(nextValue *Value, reverts Patches) error {
+func patchConditionalReverts(nextValue *Value, reverts *Patches) error {
 	patches := reverts.List()
 	for i := 0; i < len(patches); i++ {
 		patch := patches[i]
