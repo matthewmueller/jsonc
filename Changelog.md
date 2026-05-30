@@ -1,3 +1,7 @@
+# 0.3.2 / 2026-05-30
+
+- reverts no longer overwrite manual changes
+
 # 0.3.1 / 2026-02-01
 
 - add an alias
