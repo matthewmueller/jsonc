@@ -1,3 +1,7 @@
+# 0.3.4 / 2026-05-30
+
+- switch to passing in schema to allow for defaults to be provided upfront
+
 # 0.3.3 / 2026-05-30
 
 - return pointers for convenience
