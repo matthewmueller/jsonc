@@ -36,8 +36,9 @@ const expect = `// This is a schema file. It defines the server configuration fo
 }`
 
 type Schema struct {
-	Name string   `json:"name"`
-	Urls []string `json:"urls"`
+	Name  string   `json:"name"`
+	Urls  []string `json:"urls"`
+	Https bool     `json:"https"`
 }
 
 func TestReadWrite(t *testing.T) {
@@ -45,6 +46,9 @@ func TestReadWrite(t *testing.T) {
 
 	var schema Schema
 	is.NoErr(jsonc.Unmarshal([]byte(input), &schema))
+	is.Equal(schema.Name, "")
+	is.Equal(schema.Https, false)
+	is.Equal(len(schema.Urls), 1)
 
 	schema.Name = "modified"
 	schema.Urls = append(schema.Urls, "new.example.com")
@@ -53,6 +57,16 @@ func TestReadWrite(t *testing.T) {
 	is.NoErr(err)
 
 	diff.TestString(t, strings.TrimSuffix(string(actual), "\n"), expect)
+}
+
+func TestDefault(t *testing.T) {
+	is := is.New(t)
+
+	schema := Schema{
+		Https: true,
+	}
+	is.NoErr(jsonc.Unmarshal([]byte(input), &schema))
+	is.Equal(schema.Https, true)
 }
 
 func TestWrite(t *testing.T) {
@@ -113,7 +127,8 @@ const expandedModifiedExpect = `// This is a schema file. It defines the server 
 func TestExpanded(t *testing.T) {
 	is := is.New(t)
 
-	schema, patches, err := jsonc.UnmarshalExpanded[*Schema]([]byte(expandedInput), func(key string) string {
+	var schema Schema
+	patches, err := jsonc.UnmarshalExpanded([]byte(expandedInput), &schema, func(key string) string {
 		switch key {
 		case "APP_NAME":
 			return "MyApp"
@@ -125,6 +140,10 @@ func TestExpanded(t *testing.T) {
 	})
 	is.NoErr(err)
 
+	is.Equal(schema.Name, "MyApp")
+	is.Equal(len(schema.Urls), 2)
+	is.Equal(schema.Urls[0], "hello.example.com")
+	is.Equal(schema.Urls[1], "base.example.com")
 	schema.Urls = append(schema.Urls, "new.example.com")
 
 	actual, err := jsonc.PatchExpanded([]byte(expandedInput), schema, patches)
@@ -136,7 +155,8 @@ func TestExpanded(t *testing.T) {
 func TestExpandedModifiedValue(t *testing.T) {
 	is := is.New(t)
 
-	schema, patches, err := jsonc.UnmarshalExpanded[*Schema]([]byte(expandedInput), func(key string) string {
+	var schema Schema
+	patches, err := jsonc.UnmarshalExpanded([]byte(expandedInput), &schema, func(key string) string {
 		switch key {
 		case "APP_NAME":
 			return "MyApp"
@@ -148,6 +168,10 @@ func TestExpandedModifiedValue(t *testing.T) {
 	})
 	is.NoErr(err)
 
+	is.Equal(schema.Name, "MyApp")
+	is.Equal(len(schema.Urls), 2)
+	is.Equal(schema.Urls[0], "hello.example.com")
+	is.Equal(schema.Urls[1], "base.example.com")
 	schema.Urls[1] = "modified.example.com"
 	schema.Urls = append(schema.Urls, "new.example.com")
 

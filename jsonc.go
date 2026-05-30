@@ -41,20 +41,20 @@ func Unmarshal(data []byte, out any) error {
 // any environment variables using the provided expander function. It also
 // returns conditional JSON patches that can revert expanded values back to their
 // original placeholders when PatchExpanded writes the data back.
-func UnmarshalExpanded[JSON any](data []byte, expander func(key string) string) (out JSON, reverts *Patches, err error) {
-	if err := Unmarshal(data, &out); err != nil {
-		return out, reverts, err
+func UnmarshalExpanded[JSON any](data []byte, out JSON, expander func(key string) string) (reverts *Patches, err error) {
+	var unexpanded JSON
+	if err := Unmarshal(data, &unexpanded); err != nil {
+		return nil, err
 	}
-	expandedData := os.Expand(string(data), expander)
-	var expanded JSON
-	if err := Unmarshal([]byte(expandedData), &expanded); err != nil {
-		return out, reverts, err
+	expanded := os.Expand(string(data), expander)
+	if err := Unmarshal([]byte(expanded), &out); err != nil {
+		return nil, fmt.Errorf("jsonc: failed to unmarshal expanded data: %w", err)
 	}
-	patches, err := jsonpatch.CreateJSONPatch(out, expanded, jsonpatch.WithHandler(maybeRevertHandler{}))
+	patches, err := jsonpatch.CreateJSONPatch(unexpanded, out, jsonpatch.WithHandler(maybeRevertHandler{}))
 	if err != nil {
-		return out, reverts, err
+		return nil, err
 	}
-	return expanded, &patches, nil
+	return &patches, nil
 }
 
 // Patch modifies the original jsonc data with the changes, preserving comments
