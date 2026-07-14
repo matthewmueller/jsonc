@@ -1,6 +1,6 @@
 # jsonc
 
-This package is a fork of [hujson](github.com/tailscale/hujson) that works better with VSCode's built-in [JSON with Comments (jsonc)](https://code.visualstudio.com/docs/languages/json#_json-with-comments) format. This is the same format you'll find on VSCode's Settings and Task files.
+This package is a fork of [hujson](https://github.com/tailscale/hujson) that works better with VSCode's built-in [JSON with Comments (jsonc)](https://code.visualstudio.com/docs/languages/json#_json-with-comments) format. This is the same format you'll find on VSCode's Settings and Task files.
 
 This fork adjusts the formatting to match both:
 
